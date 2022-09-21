@@ -13,21 +13,26 @@
 TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    // Temporarily disabled but used to load a file instead of drag and drop
     //mLoadButton.onClick = [&]() { audioProcessor.loadFile(); };
     //addAndMakeVisible(mLoadButton);
 
+    // All the properties of the attack slider that we want set up.
     mAttackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     mAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
     mAttackSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::darkslateblue);
     mAttackSlider.setRange(0.0f, 5.0f, 0.01f);
+    // Attach the listener to the mAttackSlider.
     mAttackSlider.addListener(this);
+    // Finally Make it visible and add it
     addAndMakeVisible(mAttackSlider);
 
-    mAttackLabel.setFont(10.0f);
+    // Set the properties of the label
+    mAttackLabel.setFont(18.0f);
     mAttackLabel.setText("Attack", juce::dontSendNotification);
     mAttackLabel.setJustificationType(juce::Justification::centredTop);
     mAttackLabel.attachToComponent(&mAttackSlider, false);
-    mAttackLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen);
+    mAttackLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen  );
     addAndMakeVisible(mAttackLabel);
 
     mDecaySlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
@@ -37,7 +42,7 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mDecaySlider.addListener(this);
     addAndMakeVisible(mDecaySlider);
 
-    mDecayLabel.setFont(10.0f);
+    mDecayLabel.setFont(18.0f);
     mDecayLabel.setText("Decay", juce::dontSendNotification);
     mDecayLabel.setJustificationType(juce::Justification::centredTop);
     mDecayLabel.attachToComponent(&mDecaySlider, false);
@@ -51,7 +56,7 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mSustainSlider.addListener(this);
     addAndMakeVisible(mSustainSlider);
 
-    mSustainLabel.setFont(10.0f);
+    mSustainLabel.setFont(18.0f);
     mSustainLabel.setText("Sustain", juce::dontSendNotification);
     mSustainLabel.setJustificationType(juce::Justification::centredTop);
     mSustainLabel.attachToComponent(&mSustainSlider, false);
@@ -65,14 +70,15 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mReleaseSlider.addListener(this);
     addAndMakeVisible(mReleaseSlider);
 
-    mReleaseLabel.setFont(10.0f);
+    mReleaseLabel.setFont(18.0f);
     mReleaseLabel.setText("Release", juce::dontSendNotification);
     mReleaseLabel.setJustificationType(juce::Justification::centredTop);
     mReleaseLabel.attachToComponent(&mReleaseSlider, false);
     mReleaseLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen);
     addAndMakeVisible(mReleaseLabel);
     
-    setSize (600, 200);
+    // The size can be anything and the drawing of the waveform while automatically update.
+    setSize (1200, 600);
 }
 
 TAPsamplerAudioProcessorEditor::~TAPsamplerAudioProcessorEditor()
@@ -81,6 +87,7 @@ TAPsamplerAudioProcessorEditor::~TAPsamplerAudioProcessorEditor()
 
 juce::Path TAPsamplerAudioProcessorEditor::drawPath()
 {
+    // Create a Path
     juce::Path p;
     //mAudioPoints.clear();
 
@@ -92,29 +99,32 @@ juce::Path TAPsamplerAudioProcessorEditor::drawPath()
         //Use the ratio to take values from the audio buffer and put it in vector to display.
         //Draw the waveform
 
+    // Get the wavefrom from the back end and calculate its ratio and finally get a read buffer to it.
     auto waveform = audioProcessor.getWaveForm();
-    auto ratio = waveform.getNumSamples() / getWidth();
+    const float ratio = waveform.getNumSamples() / getWidth();
     auto buffer = waveform.getReadPointer(0);
 
     // Scale audio file along the x axis to conform with the window
     for (float sample = 0; sample < waveform.getNumSamples(); sample += ratio)
     {
+        // Add the correct amount of audio points to fit the screen in the x direction
         mAudioPoints.push_back(buffer[(int)sample]);
     }
 
+    // Start the path at the left middle
     p.startNewSubPath(0, getHeight() / 2);
 
     // Scale on Y-Axis
     for (int sample = 0; sample < mAudioPoints.size(); ++sample)
     {
-        auto point = juce::jmap<float>(mAudioPoints[sample], -1.0, 1.0f, 200, 0);
+        // Automatically map the sample's Y position to the desired position between 200 (negative -1.0) and 0 (positive 1.0)
+        auto point = juce::jmap<float>(mAudioPoints[sample], -1.0, 1.0f, getHeight(), 0);
 
+        // Draw a line for each point
         p.lineTo(sample, point);
     }
 
     return p;
-
-
 }
 
 //==============================================================================
@@ -122,14 +132,15 @@ void TAPsamplerAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::black);
+    // Set the path color as white
     g.setColour(juce::Colours::white);
-    
 
-
+    // If a new file has been updated
     if (mShouldBePainting)
     {
-    
+        // Stroke the path with the path generated from drawPath() and a Stroke Type of 1
         g.strokePath(drawPath(), juce::PathStrokeType(1));
+        // Don't call this part of code again until a new file has been uploaded.
         mShouldBePainting = false;
     }
     /*g.setFont(15.0f);
@@ -153,11 +164,13 @@ void TAPsamplerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void TAPsamplerAudioProcessorEditor::resized()
 {
+    // The constants for setting up the GUI Positions of the Sliders and Labels
     const auto startX = 0.6f;
     const auto startY = 0.6f;
     const auto dialWidth = 0.1f;
     const auto dialHeight = 0.4f;
 
+    // Set Bounds Relative simply uses percentages of the screen to decide where and how big the elements while be.
     mAttackSlider.setBoundsRelative(startX, startY, dialWidth, dialHeight);
     mDecaySlider.setBoundsRelative(startX + dialWidth, startY, dialWidth, dialHeight);
     mSustainSlider.setBoundsRelative(startX + 2*dialWidth, startY, dialWidth, dialHeight);
@@ -167,23 +180,31 @@ void TAPsamplerAudioProcessorEditor::resized()
 
 bool TAPsamplerAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files)
 {
+    // Loop through all the files
     for (auto file : files)
     {
+        // If any contain a recognized music format return true.
         if (file.contains(".wav") || file.contains(".mp3") || file.contains(".aif"))
         {
+            // Return true since it is a music file.
             return true;
         }
     }
+    // No music files were found, so return false.
     return false;
 }
 
 void TAPsamplerAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x, int y)
 {
+    // For each file that has been dropped
     for (auto file : files)
     {
+        // Check if the file is of the appropriate type
         if (isInterestedInFileDrag(juce::StringArray{ file }))
         {
+            // Load the file into the sampler
             audioProcessor.loadFile(file);
+            // Draw the waveform on the GUI.
             mShouldBePainting = true;
         }
     }
@@ -194,20 +215,25 @@ void TAPsamplerAudioProcessorEditor::filesDropped(const juce::StringArray& files
 
 void TAPsamplerAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
 {
+    // If the slider is an mAttackSlider
     if (slider == &mAttackSlider)
     {
-        audioProcessor.attack = mAttackSlider.getValue();
+        // Update the audio processors ADSR attack value by getting the value of the attack slider with .getValue()
+        audioProcessor.getADSRParams().attack = mAttackSlider.getValue();
     }
     else if (slider == &mDecaySlider)
     {
-        audioProcessor.release = mReleaseSlider.getValue();
+        audioProcessor.getADSRParams().release = mReleaseSlider.getValue();
     }
     else if (slider == &mSustainSlider)
     {
-        audioProcessor.sustain = mSustainSlider.getValue();
+        audioProcessor.getADSRParams().sustain = mSustainSlider.getValue();
     }
     else if (slider == &mReleaseSlider)
     {
-        audioProcessor.release = mReleaseSlider.getValue();
+        audioProcessor.getADSRParams().release = mReleaseSlider.getValue();
     }
+
+    // Since a Slider value has changed, update all the slider values in the backend ADSR
+    audioProcessor.updateADSRValue();
 }

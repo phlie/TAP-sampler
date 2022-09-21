@@ -22,8 +22,10 @@ TAPsamplerAudioProcessor::TAPsamplerAudioProcessor()
                        )
 #endif
 {
+    // Register the basic formats allowed for sampled sounds
     mFormatManager.registerBasicFormats();
 
+    // Loop through the max number of voices and add a voice to synthesiser class mSampler for each one.
     for (int i = 0; i < mNumVoices; i++)
     {
         mSampler.addVoice(new juce::SamplerVoice());
@@ -32,6 +34,7 @@ TAPsamplerAudioProcessor::TAPsamplerAudioProcessor()
 
 TAPsamplerAudioProcessor::~TAPsamplerAudioProcessor()
 {
+    // In case something happens, mFormatReader needs to not have a memory leak.
     mFormatReader = nullptr;
 }
 
@@ -100,7 +103,22 @@ void TAPsamplerAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void TAPsamplerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    // Sets the current playback sample rate
     mSampler.setCurrentPlaybackSampleRate(sampleRate);
+
+    // Do an inital update of the ADSR values
+    updateADSRValue();
+
+    /*for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    {
+        // Dynamically cast the Synthesiser class current sound to try and cast it to SampleSound*, although it needs a pointer which is what get() does.
+        // This is necessary because it only works on SamplerSounds not synthesiser sounds
+        if (auto sound = dynamic_cast<juce::SamplerSound*>(mSampler.getSound(i).get()))
+        {
+            // Set the ADSR Envelope for the current paramters.
+            sound->setEnvelopeParameters(mADSRparams);
+        }
+    }*/
 }
 
 void TAPsamplerAudioProcessor::releaseResources()
@@ -137,16 +155,17 @@ bool TAPsamplerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 
 void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    // Get the input and output channels
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+    // Clear the buffer at the start for now
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    // Call the sampler's render next block
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-
-    getADSRValue();
 }
 
 //==============================================================================
@@ -174,36 +193,54 @@ void TAPsamplerAudioProcessor::setStateInformation (const void* data, int sizeIn
     // whose contents will have been created by the getStateInformation() call.
 }
 
+// This is used when the load button is clicked.
 void TAPsamplerAudioProcessor::loadFile()
 {
+    // Clear the current sounds that the sampler may have
     mSampler.clearSounds();
 
+    // Allow the user to choose a file.
     juce::FileChooser chooser{ "Please load a file." };
     
+    // For this to work, "JUCE_MODAL_LOOPS_PERMITTED=1" needs to be in the JUCE Settings Preprocessor Definitons
+    // Although there is a more modern way to do this using an async method.
     if (chooser.browseForFileToOpen())
     {
+        // Get the result of the user choosing the file
         auto file = chooser.getResult();
+        // Create a reader for the file
         mFormatReader = mFormatManager.createReaderFor(file);
-
-
     }
 
+    // This creates a BigInteger holding the range of keys on a MIDI keyboard, at most 0 to 128
     juce::BigInteger range;
     range.setRange(0, 128, true);
 
+    // Finally add the sound to the synthesiser class using the default juce Sampler Sound class
     mSampler.addSound(new juce::SamplerSound("Sample", *mFormatReader, range, 60, 0.1f, 0.1f, 20.f));
 }
 
+// This is used for drag and drop
 void TAPsamplerAudioProcessor::loadFile(const juce::String& path)
 {
+    // Clear the current sounds
     mSampler.clearSounds();
 
+    // Get the path from the drag and dropped file
     auto file = juce::File(path);
+
+    // Create a Format Reader for the file
     mFormatReader = mFormatManager.createReaderFor(file);
 
     //auto sampleLength = static_cast<int>(mFormatReader->lengthInSamples);
+
+    // The sampeLength is set to 1 second of data to display in the waveform editor.
     auto sampleLength = 44100;
+
+    // This is necessary because mWaveForm is a vector and it needs a size equal or bigger to the max data storage
+    // Remember that the first int is for the number of new channels, which here is 1
     mWaveForm.setSize(1, sampleLength);
+    // Transfer the data to mWaveForm up to sampleLength
     mFormatReader->read(&mWaveForm, 0, sampleLength, 0, true, false);
 
     //auto buffer = mWaveForm.getReadPointer(0);
@@ -213,15 +250,34 @@ void TAPsamplerAudioProcessor::loadFile(const juce::String& path)
         // DBG(buffer[sample]); Used for debugging.
     }*/
 
+    // Create the range of MIDI notes
     juce::BigInteger range;
     range.setRange(0, 128, true);
 
+    // Add the sound using the default Sampler Sound class with the reader, range, normalized key, etc.
     mSampler.addSound(new juce::SamplerSound("Sample", *mFormatReader, range, 60, 0.1f, 0.1f, 20.f));
 }
 
-void TAPsamplerAudioProcessor::getADSRValue()
+void TAPsamplerAudioProcessor::updateADSRValue()
 {
-    DBG("Attack" << attack << " Decay: " << decay << " Sustain: " << sustain << " Release: " << release);
+    /*mADSRparams.attack = attack;
+    mADSRparams.decay = decay;
+    mADSRparams.sustain = sustain;
+    mADSRparams.release = release;
+    */
+    // Loop through the total number of sounds
+    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    {
+        // Dynamically cast the Synthesiser class current sound to try and cast it to SampleSound*, although it needs a pointer which is what get() does.
+        // This is necessary because it only works on SamplerSounds not synthesiser sounds.
+        // We wouldn't be able to call setEnvelopeParameters without it
+        if (auto sound = dynamic_cast<juce::SamplerSound*>(mSampler.getSound(i).get()))
+        {
+            // Set the ADSR Envelope for the current paramters.
+            sound->setEnvelopeParameters(mADSRparams);
+        }
+    }
+
 }
 
 //==============================================================================

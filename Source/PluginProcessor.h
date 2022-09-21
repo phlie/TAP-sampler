@@ -59,22 +59,36 @@ public:
     void loadFile();
     void loadFile(const juce::String& path);
 
+    // Returns the total number of sounds attached to the synthesiser
     int getNumSamplerSounds() { return mSampler.getNumSounds(); };
 
+    // Used to return a reference to the mWaveForm for use in drawing its diagram
     juce::AudioBuffer<float>& getWaveForm() { return mWaveForm; };
 
-    void getADSRValue();
+    // Called to update all the ADSR values
+    void updateADSRValue();
 
+    // Used to pass the ADSR Params to the Editor
+    juce::ADSR::Parameters& getADSRParams() { return mADSRparams; };
+
+    // The values for the ADSR to be inserted
     float attack{ 0.0f };
     float decay{ 0.0f };
     float sustain{ 0.0f };
     float release{ 0.0f };
 
 private:
+    // Create a Synthesiser class
     juce::Synthesiser mSampler;
+
+    // Declare the maximum number of voices
     const int mNumVoices{ 3 };
     juce::AudioBuffer<float> mWaveForm;
 
+    // Holds all the ADSR parameters
+    juce::ADSR::Parameters mADSRparams;
+
+    // The Format Manager responsible for file types and the reader, initially set to nullptr.
     juce::AudioFormatManager mFormatManager;
     juce::AudioFormatReader* mFormatReader = nullptr;
 
