@@ -37,6 +37,9 @@ private:
     std::vector<float> mAudioPoints;
     bool mShouldBePainting{ false };
 
+    juce::Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
+    juce::Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     TAPsamplerAudioProcessor& audioProcessor;
