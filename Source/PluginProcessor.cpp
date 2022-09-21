@@ -145,6 +145,8 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, buffer.getNumSamples());
 
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    getADSRValue();
 }
 
 //==============================================================================
@@ -217,6 +219,10 @@ void TAPsamplerAudioProcessor::loadFile(const juce::String& path)
     mSampler.addSound(new juce::SamplerSound("Sample", *mFormatReader, range, 60, 0.1f, 0.1f, 20.f));
 }
 
+void TAPsamplerAudioProcessor::getADSRValue()
+{
+    DBG("Attack" << attack << " Decay: " << decay << " Sustain: " << sustain << " Release: " << release);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

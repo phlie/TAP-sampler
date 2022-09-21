@@ -15,7 +15,8 @@
 /**
 */
 class TAPsamplerAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                        public juce::FileDragAndDropTarget
+                                        public juce::FileDragAndDropTarget,
+                                        public juce::Slider::Listener
 {
 public:
     TAPsamplerAudioProcessorEditor (TAPsamplerAudioProcessor&);
@@ -30,12 +31,14 @@ public:
 
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-    juce::Path drawPath();
+    void sliderValueChanged(juce::Slider* slider) override;
 
 private:
     juce::TextButton mLoadButton{ "Load" };
     std::vector<float> mAudioPoints;
     bool mShouldBePainting{ false };
+
+    juce::Path drawPath();
 
     juce::Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
     juce::Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
