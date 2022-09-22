@@ -21,9 +21,9 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mAttackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     mAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
     mAttackSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::darkslateblue);
-    mAttackSlider.setRange(0.0f, 5.0f, 0.01f);
+    //mAttackSlider.setRange(0.0f, 5.0f, 0.01f);
     // Attach the listener to the mAttackSlider.
-    mAttackSlider.addListener(this);
+    //mAttackSlider.addListener(this);
     // Finally Make it visible and add it
     addAndMakeVisible(mAttackSlider);
 
@@ -35,11 +35,13 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mAttackLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen  );
     addAndMakeVisible(mAttackLabel);
 
+    mAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.getAPVTS(), "ATTACK", mAttackSlider);
+
     mDecaySlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     mDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
     mDecaySlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::darkslateblue);
-    mDecaySlider.setRange(0.0f, 5.0f, 0.01f);
-    mDecaySlider.addListener(this);
+    //mDecaySlider.setRange(0.0f, 5.0f, 0.01f);
+    //mDecaySlider.addListener(this);
     addAndMakeVisible(mDecaySlider);
 
     mDecayLabel.setFont(18.0f);
@@ -49,11 +51,13 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mDecayLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen);
     addAndMakeVisible(mDecayLabel);
 
+    mDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.getAPVTS(), "DECAY", mDecaySlider);
+
     mSustainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     mSustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
     mSustainSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::darkslateblue);
-    mSustainSlider.setRange(0.0f, 1.0f, 0.01f);
-    mSustainSlider.addListener(this);
+    //mSustainSlider.setRange(0.0f, 1.0f, 0.01f);
+    //mSustainSlider.addListener(this);
     addAndMakeVisible(mSustainSlider);
 
     mSustainLabel.setFont(18.0f);
@@ -63,11 +67,13 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mSustainLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen);
     addAndMakeVisible(mSustainLabel);
 
+    mSustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.getAPVTS(), "SUSTAIN", mSustainSlider);
+
     mReleaseSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     mReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
     mReleaseSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::darkslateblue);
-    mReleaseSlider.setRange(0.0f, 5.0f, 0.01f);
-    mReleaseSlider.addListener(this);
+    //mReleaseSlider.setRange(0.0f, 5.0f, 0.01f);
+    //mReleaseSlider.addListener(this);
     addAndMakeVisible(mReleaseSlider);
 
     mReleaseLabel.setFont(18.0f);
@@ -77,6 +83,8 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     mReleaseLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::springgreen);
     addAndMakeVisible(mReleaseLabel);
     
+    mReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.getAPVTS(), "RELEASE", mReleaseSlider);
+
     // The size can be anything and the drawing of the waveform while automatically update.
     setSize (1200, 600);
 }
@@ -212,7 +220,7 @@ void TAPsamplerAudioProcessorEditor::filesDropped(const juce::StringArray& files
     repaint();
 
 }
-
+/*
 void TAPsamplerAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
 {
     // If the slider is an mAttackSlider
@@ -236,4 +244,4 @@ void TAPsamplerAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
 
     // Since a Slider value has changed, update all the slider values in the backend ADSR
     audioProcessor.updateADSRValue();
-}
+} */

@@ -15,8 +15,8 @@
 /**
 */
 class TAPsamplerAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                        public juce::FileDragAndDropTarget,
-                                        public juce::Slider::Listener
+                                        public juce::FileDragAndDropTarget
+                                        //public juce::Slider::Listener     // Used to create a listener fro knob turns
 {
 public:
     TAPsamplerAudioProcessorEditor (TAPsamplerAudioProcessor&);
@@ -33,7 +33,7 @@ public:
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
     // Whenever a slider value has changed call the proper parameters in the audio processor class
-    void sliderValueChanged(juce::Slider* slider) override;
+    //void sliderValueChanged(juce::Slider* slider) override;
 
 private:
     // The button for loading a file using the browser.
@@ -51,6 +51,11 @@ private:
     // The sliders and their corresponding labels.
     juce::Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
     juce::Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mAttackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mDecayAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mSustainAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mReleaseAttachment;
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.

@@ -13,10 +13,8 @@
 //==============================================================================
 /**
 */
-class TAPsamplerAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class TAPsamplerAudioProcessor  : public juce::AudioProcessor,
+                                  public juce::ValueTree::Listener
 {
 public:
     //==============================================================================
@@ -77,6 +75,7 @@ public:
     float sustain{ 0.0f };
     float release{ 0.0f };
 
+    juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; };
 private:
     // Create a Synthesiser class
     juce::Synthesiser mSampler;
@@ -91,6 +90,15 @@ private:
     // The Format Manager responsible for file types and the reader, initially set to nullptr.
     juce::AudioFormatManager mFormatManager;
     juce::AudioFormatReader* mFormatReader = nullptr;
+
+    juce::AudioProcessorValueTreeState apvts;
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
+    // A Value Tree and State also makes it so the variables are able to be automated in a DAW
+    void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property) override;
+
+    // An atomic variable is a thread safe manner of passing variables or data between two different processes.
+    std::atomic<bool> mShouldUpdate{ false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TAPsamplerAudioProcessor)

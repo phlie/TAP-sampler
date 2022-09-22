@@ -19,11 +19,14 @@ TAPsamplerAudioProcessor::TAPsamplerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts(*this, nullptr, "PARAMETERS", createParameters())
 #endif
 {
     // Register the basic formats allowed for sampled sounds
     mFormatManager.registerBasicFormats();
+
+    // Adds this processor as a listener for changes in the apvts value tree.
+    apvts.state.addListener(this);
 
     // Loop through the max number of voices and add a voice to synthesiser class mSampler for each one.
     for (int i = 0; i < mNumVoices; i++)
@@ -164,6 +167,11 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    if (mShouldUpdate)
+    {
+        updateADSRValue();
+    }
+
     // Call the sampler's render next block
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
@@ -218,6 +226,7 @@ void TAPsamplerAudioProcessor::loadFile()
 
     // Finally add the sound to the synthesiser class using the default juce Sampler Sound class
     mSampler.addSound(new juce::SamplerSound("Sample", *mFormatReader, range, 60, 0.1f, 0.1f, 20.f));
+    updateADSRValue();
 }
 
 // This is used for drag and drop
@@ -265,6 +274,12 @@ void TAPsamplerAudioProcessor::updateADSRValue()
     mADSRparams.sustain = sustain;
     mADSRparams.release = release;
     */
+    mADSRparams.attack = apvts.getRawParameterValue("ATTACK")->load();
+    mADSRparams.decay = apvts.getRawParameterValue("DECAY")->load();
+    mADSRparams.sustain = apvts.getRawParameterValue("SUSTAIN")->load();
+    mADSRparams.release = apvts.getRawParameterValue("RELEASE")->load();
+
+
     // Loop through the total number of sounds
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
@@ -279,6 +294,24 @@ void TAPsamplerAudioProcessor::updateADSRValue()
     }
 
 }
+
+juce::AudioProcessorValueTreeState::ParameterLayout TAPsamplerAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", 0.0f, 5.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", 0.0, 5.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 0.9f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", 0.0f, 5.0f, 0.0));
+
+    return { parameters.begin(), parameters.end() };
+}
+
+void TAPsamplerAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
+{
+    mShouldUpdate = true;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..
