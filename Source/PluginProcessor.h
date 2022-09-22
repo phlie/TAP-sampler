@@ -13,6 +13,7 @@
 //==============================================================================
 /**
 */
+// It needs to inherit from ValueTree::Listener because that is how we know the values contained in the ValueTreeState have changed.
 class TAPsamplerAudioProcessor  : public juce::AudioProcessor,
                                   public juce::ValueTree::Listener
 {
@@ -54,6 +55,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    // The two functions responsible for normal opening of files, and drag and drop.
     void loadFile();
     void loadFile(const juce::String& path);
 
@@ -75,6 +77,7 @@ public:
     float sustain{ 0.0f };
     float release{ 0.0f };
 
+    // Contains a reference to the Value Tree State
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; };
 private:
     // Create a Synthesiser class
@@ -91,6 +94,7 @@ private:
     juce::AudioFormatManager mFormatManager;
     juce::AudioFormatReader* mFormatReader = nullptr;
 
+    // The value tree state and its parameters
     juce::AudioProcessorValueTreeState apvts;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

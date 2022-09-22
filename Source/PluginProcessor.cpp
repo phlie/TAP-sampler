@@ -19,6 +19,7 @@ TAPsamplerAudioProcessor::TAPsamplerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
+                        // In the intialization list, the apvts gets passed in.
                        ), apvts(*this, nullptr, "PARAMETERS", createParameters())
 #endif
 {
@@ -167,8 +168,10 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    // Only when a change is detected...
     if (mShouldUpdate)
     {
+        // ... actually update the ADSR values.
         updateADSRValue();
     }
 
@@ -184,6 +187,7 @@ bool TAPsamplerAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* TAPsamplerAudioProcessor::createEditor()
 {
+    // When the Editor is created it needs a reference to this processor for its constructor
     return new TAPsamplerAudioProcessorEditor (*this);
 }
 
@@ -226,7 +230,7 @@ void TAPsamplerAudioProcessor::loadFile()
 
     // Finally add the sound to the synthesiser class using the default juce Sampler Sound class
     mSampler.addSound(new juce::SamplerSound("Sample", *mFormatReader, range, 60, 0.1f, 0.1f, 20.f));
-    updateADSRValue();
+    //updateADSRValue();
 }
 
 // This is used for drag and drop
@@ -274,6 +278,8 @@ void TAPsamplerAudioProcessor::updateADSRValue()
     mADSRparams.sustain = sustain;
     mADSRparams.release = release;
     */
+
+    // All the ADSR params must get the value of the knobs and since they are atomic, they need to use load()
     mADSRparams.attack = apvts.getRawParameterValue("ATTACK")->load();
     mADSRparams.decay = apvts.getRawParameterValue("DECAY")->load();
     mADSRparams.sustain = apvts.getRawParameterValue("SUSTAIN")->load();
@@ -297,18 +303,23 @@ void TAPsamplerAudioProcessor::updateADSRValue()
 
 juce::AudioProcessorValueTreeState::ParameterLayout TAPsamplerAudioProcessor::createParameters()
 {
+    // Create a place to store the Parameter Layout
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
 
+    // Add each of the float parameters.
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", 0.0f, 5.0f, 0.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", 0.0, 5.0f, 0.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 0.9f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", 0.0f, 5.0f, 0.0));
 
+    // Return the vector starting with the first param, and ending with the last.
     return { parameters.begin(), parameters.end() };
 }
 
+// When the Value Tree has a property changed, this gets called.
 void TAPsamplerAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
 {
+    // Notifying the render function that it should update the ADSR values.
     mShouldUpdate = true;
 }
 
