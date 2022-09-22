@@ -175,6 +175,26 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         updateADSRValue();
     }
 
+    juce::MidiMessage m;
+    juce::MidiBuffer::Iterator it{ midiMessages };
+    int sample;
+
+    while (it.getNextEvent(m, sample))
+    {
+        if (m.isNoteOn())
+        {
+            // Notes on, start the playhead
+            mIsNotePlayed = true;
+        }
+        else if (m.isNoteOff())
+        {
+            // Stop the playhead.
+            mIsNotePlayed = false;
+        }
+    }
+
+    mSampleCount = mIsNotePlayed ? mSampleCount += buffer.getNumSamples() : 0;
+
     // Call the sampler's render next block
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }

@@ -16,7 +16,8 @@
 //==============================================================================
 /**
 */
-class TAPsamplerAudioProcessorEditor  : public juce::AudioProcessorEditor
+class TAPsamplerAudioProcessorEditor  : public juce::AudioProcessorEditor,
+                                        public juce::Timer
                                         //public juce::Slider::Listener     // Used to create a listener fro knob turns
 {
 public:
@@ -28,6 +29,7 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void timerCallback() override;
     // Whenever a slider value has changed call the proper parameters in the audio processor class
     //void sliderValueChanged(juce::Slider* slider) override;
 

@@ -79,6 +79,9 @@ public:
 
     // Contains a reference to the Value Tree State
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; };
+
+    std::atomic<bool>& isNotePlayed() { return mIsNotePlayed; };
+    std::atomic<int>& getSampleCount() { return mSampleCount; };
 private:
     // Create a Synthesiser class
     juce::Synthesiser mSampler;
@@ -103,6 +106,11 @@ private:
 
     // An atomic variable is a thread safe manner of passing variables or data between two different processes.
     std::atomic<bool> mShouldUpdate{ false };
+
+    // The std::atomic is a much heavier data type that should only be used when the variable is being accessed by two threads.
+    std::atomic<bool> mIsNotePlayed{ false };
+
+    std::atomic<int> mSampleCount{ 0 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TAPsamplerAudioProcessor)

@@ -23,12 +23,15 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
 
+    startTimerHz(30);
+
     // The size can be anything and the drawing of the waveform while automatically update.
     setSize (1200, 600);
 }
 
 TAPsamplerAudioProcessorEditor::~TAPsamplerAudioProcessorEditor()
 {
+    stopTimer();
 }
 
 //juce::Path TAPsamplerAudioProcessorEditor::drawPath()
@@ -109,6 +112,11 @@ void TAPsamplerAudioProcessorEditor::resized()
 
 
     //mLoadButton.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
+}
+
+void TAPsamplerAudioProcessorEditor::timerCallback()
+{
+    repaint();
 }
 
 
