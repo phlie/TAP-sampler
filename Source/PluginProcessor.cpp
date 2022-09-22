@@ -175,17 +175,23 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         updateADSRValue();
     }
 
+    // Create a MidiMessage holder
     juce::MidiMessage m;
+    // Create an iterator over the inputed midiMessages.
     juce::MidiBuffer::Iterator it{ midiMessages };
+    // Used to determine the sample that the note is played on or turned off.
     int sample;
 
+    // Loop through while there are any Midi Messages and record where in sample
     while (it.getNextEvent(m, sample))
     {
+        // If the MidiMessage is a note on...
         if (m.isNoteOn())
         {
             // Notes on, start the playhead
             mIsNotePlayed = true;
         }
+        // If the midi message is a note off...
         else if (m.isNoteOff())
         {
             // Stop the playhead.
@@ -193,6 +199,7 @@ void TAPsamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         }
     }
 
+    // The sample count is updated while the note is being played with the total size of the buffer, and reset to 0 when it is a note off message.
     mSampleCount = mIsNotePlayed ? mSampleCount += buffer.getNumSamples() : 0;
 
     // Call the sampler's render next block

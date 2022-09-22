@@ -80,6 +80,7 @@ public:
     // Contains a reference to the Value Tree State
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; };
 
+    // Returns atomic values and is simply used to get a reference to the internally held atomic data.
     std::atomic<bool>& isNotePlayed() { return mIsNotePlayed; };
     std::atomic<int>& getSampleCount() { return mSampleCount; };
 private:
@@ -88,6 +89,7 @@ private:
 
     // Declare the maximum number of voices
     const int mNumVoices{ 3 };
+    // Declare an AudioBuffer to hold the wave form
     juce::AudioBuffer<float> mWaveForm;
 
     // Holds all the ADSR parameters
@@ -110,6 +112,7 @@ private:
     // The std::atomic is a much heavier data type that should only be used when the variable is being accessed by two threads.
     std::atomic<bool> mIsNotePlayed{ false };
 
+    // Sample count simply counts the number of samples since the note was on.
     std::atomic<int> mSampleCount{ 0 };
 
     //==============================================================================

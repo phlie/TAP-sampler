@@ -18,17 +18,35 @@ TAPsamplerAudioProcessorEditor::TAPsamplerAudioProcessorEditor (TAPsamplerAudioP
     // Temporarily disabled but used to load a file instead of drag and drop
     //mLoadButton.onClick = [&]() { audioProcessor.loadFile(); };
     //addAndMakeVisible(mLoadButton);
+    
+    // Adds the almost music logo to the variable which is stored in BinaryData. It needs the size which is also available.
+    auto almostMusicLogo = juce::ImageCache::getFromMemory(BinaryData::almostmusiclogo_png, BinaryData::almostmusiclogo_pngSize);
+    
+    // If the image has been loaded from memory
+    if (!almostMusicLogo.isNull())
+    {
+        // Set the image and set it to stretch to fill its bounds
+        mImageComponent.setImage(almostMusicLogo, juce::RectanglePlacement::stretchToFit);
+    }
+    else
+        // If the image is not loaded quit because of error.
+        jassert(!almostMusicLogo.isNull());
 
     // Adds the two front end components to the Editor component
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
 
+    // An image component is pretty much the same as any other component.
+    addAndMakeVisible(mImageComponent);
+
+    // Call the timer callback 30 times a second.
     startTimerHz(30);
 
     // The size can be anything and the drawing of the waveform while automatically update.
     setSize (1200, 600);
 }
 
+// Disable the timer when the editor window is not in use.
 TAPsamplerAudioProcessorEditor::~TAPsamplerAudioProcessorEditor()
 {
     stopTimer();
@@ -110,12 +128,15 @@ void TAPsamplerAudioProcessorEditor::resized()
     mWaveThumbnail.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
     mADSR.setBoundsRelative(0.0, 0.75f, 1.0f, 0.25f);
 
+    // Set the relative bounds of the image component.
+    mImageComponent.setBoundsRelative(0.0f, 0.0f, 1.0f, 0.25f);
 
     //mLoadButton.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
 }
 
 void TAPsamplerAudioProcessorEditor::timerCallback()
 {
+    // Every time the timer is called, repaint the entire interface, it could run faster if it only updated the required components.
     repaint();
 }
 

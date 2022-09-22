@@ -17,7 +17,7 @@
 /**
 */
 class TAPsamplerAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                        public juce::Timer
+                                        public juce::Timer  // Timer is used to create a Timer Callback function.
                                         //public juce::Slider::Listener     // Used to create a listener fro knob turns
 {
 public:
@@ -29,7 +29,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    // This comes from the Timer abstract class and has to be overriden with our own code for when the timer is called.
     void timerCallback() override;
+
     // Whenever a slider value has changed call the proper parameters in the audio processor class
     //void sliderValueChanged(juce::Slider* slider) override;
 
@@ -40,6 +42,9 @@ private:
     // The two visua component classes and their objects.
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
+
+    // Used to hold the image component, in our case the Almost Music Logo
+    juce::ImageComponent mImageComponent;
 
     // Returns a path object and is used to draw the waveform.
     //juce::Path drawPath();

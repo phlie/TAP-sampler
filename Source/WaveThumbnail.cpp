@@ -85,12 +85,17 @@ void WaveThumbnail::paint (juce::Graphics& g)
         // Set the text to within textBounds and to the top right.
         g.drawFittedText(mFileName, textBounds, juce::Justification::topRight, 1);
 
+        // Set the playHead position which is update 30 times a second
         auto playHeadPosition = juce::jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), 0, getWidth());
         
+        // The color of the line is set here.
         g.setColour(juce::Colours::darkslategrey);
+        // Draw a straight vertical line with a thickness of 5.0f;
         g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 5.0f);
 
+        // Set the past rectangle for the playhead as transparent black to show the progress indicator.
         g.setColour(juce::Colours::black.withAlpha(0.5f));
+        // Finally create a rectangle up to the playHeadPosition.
         g.fillRect(0, 0, playHeadPosition, getHeight());
     }
     else
@@ -131,8 +136,10 @@ void WaveThumbnail::filesDropped(const juce::StringArray& files, int x, int y)
             // Load the file into the sampler
             processor.loadFile(file);
 
+            // Gets the file's name without the .wav or .mp3 at the end
             mFileName = myFile->getFileNameWithoutExtension();
 
+            // Repaint the component
             repaint();
             
             
